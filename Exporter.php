@@ -20,6 +20,8 @@ set_include_path(implode(PATH_SEPARATOR, array(
     realpath(INCLUDE_DIR . "/../plugins")
 )));
 
+// Assuming we run our script from path/view/filename.php, the constant will point relative to the main folder
+define('LSE_PATH_LABSYSTEM', getcwd());
 include_once('LSE/EPub.php');
 
 class LSE_Exporter

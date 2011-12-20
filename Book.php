@@ -89,15 +89,17 @@ class LSE_Book extends LSE_Element
             }
             
             $idParts = LSE_Util::getIdParts($element->getId());
+            $idPartsOfParent = array_slice($idParts, 0, count($idParts) - 1);
             
             // we assume when a child comes, its parent would already be added to the graph
             $tree = &$graph;
-            foreach ($idParts as $idPart) {
-                if (isset($tree[ $idPart ])) {
-                    $tree = &$tree[ $idPart ];
+            foreach ($idParts as $key => $idPart) {
+                $parentId = implode( ".", array_slice($idParts, 0, $key + 1) );
+                if (isset($tree[ $parentId ])) {
+                    $tree = &$tree[ $parentId ];
                 } else {
-                    $tree[ $idPart ] = array();
-                    $tree = &$tree[ $idPart ];
+                    $tree[ $parentId ] = array();
+                    $tree = &$tree[ $parentId ];
                 }
             }
         }
@@ -114,9 +116,7 @@ class LSE_Book extends LSE_Element
                     continue;
                 }
             }
-            $idParts = LSE_Util::getIdParts($element->getId());
-            $lastId = $idParts[ count($idParts) - 1];
-            $elementTable[$lastId] = array(
+            $elementTable[$element->getId()] = array(
                 $element->getId(),
                 $element->getOption('title'),
             );
