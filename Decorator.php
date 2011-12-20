@@ -39,9 +39,6 @@ class LSE_Decorator
     
     public function decorateDefault($content, $element)
     {
-        // print("<pre>============================================================\n");
-        // var_dump($element);
-        // print("===========================================================</pre>");
         return $content;
     }
     
@@ -69,14 +66,11 @@ class LSE_Decorator
         $content = sprintf($contentTemplate, $element->getTitle(), $content, $element->getId(), $element->getAuthors(),
             $element->getComment());
 //        var_dump($content); exit(0);
-        $this->decorateDefault($content, $element);
         return $content;
     }
     
     public function decorateBigC($content, $element)
     {
-        $this->decorateDefault($content, $element);
-//        var_dump($content); exit(0);
         $template = "<h3 class='section' id='%s'>%s</h3>\n";
         return sprintf($template, $element->getId(), htmlentities($element->getOption('title')));
         // Do nothing since we will have this element in Lc as well
@@ -87,7 +81,6 @@ class LSE_Decorator
 //        var_dump($element->getOptions()); 
         $template = "<h3 class='section' id='%s'>%s</h3>\n";
         // $template .= "<div class='collection_content'>%s</div>\n";
-        $this->decorateDefault($content, $element);
         return sprintf($template, $element->getId(), htmlentities($element->getOption('title')));
     }
     
@@ -95,15 +88,18 @@ class LSE_Decorator
     {
         // $template = "<h3 class='section' id='%s'>%s</h3>\n";
         $template = "<div class='collection_content' id='%s'>%s</div>\n";
-        $this->decorateDefault($content, $element);
         return sprintf($template, $element->getId(), LSE_Util::filterPTag($element->getContent()));
     }
     
     public function decorateLowI($content, $element)
     {
-        $template = "<h3 class='section' id='%s'>%s</h3>\n";
-        $template .= "<div class='collection_content'>%s</div>\n";
-        $this->decorateDefault($content, $element);
+        $template = "<div class='section' id='%s'>"
+            . "<img class='input_txt' src='../syspix/epub_symbol_input.gif'/>"
+            . "<h3>%s</h3>\n";
+        $template .= "<div class='collection_content'>"
+            . "%s"
+            . "<div class='input_textarea'></div>"
+            . "</div></div>\n";
         return sprintf($template, $element->getId(), htmlentities($element->getOption('title')), 
             $element->getContent());
     }
@@ -111,9 +107,22 @@ class LSE_Decorator
     public function decorateLowM($content, $element)
     {
         // $template = "<h3 class='section' id='%s'>%s</h3>\n";
-        $template = "<div class='collection_content' id='%s'>%s</div>\n";
-        $this->decorateDefault($content, $element);
-        return sprintf($template, $element->getId(), $element->getOption('question'), 
-            $element->getOption('answerArray'));
+        $template = "<div class='collection_content' id='%s'>" 
+            . "<img class='input_mul' src='../syspix/epub_symbol_multiple-choice.gif'/>"
+            . "%s"
+            . "<div class='input_mul_text'>%s</div>"
+            . "</div>\n";
+        $answerTemplate = "<li><img src='../syspix/epub_symbol_multiple-choice-square.png'/>%s</li>\n";
+        $answer = '';
+        foreach ($element->getOption('answerArray') as $oneAnswer) {
+//            var_dump($answer);
+            $answer .= sprintf($answerTemplate, $oneAnswer);
+        }
+        if ( $answer != '' ) {
+            $answer = "<ol>$answer</ol>";
+        }
+        
+        
+        return sprintf($template, $element->getId(), $element->getOption('question'), $answer);
     }
 }
