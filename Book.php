@@ -73,4 +73,54 @@ class LSE_Book extends LSE_Element
     {
         $this->lang = $lang;
     }
+    
+    public function buildGraph($parentFilter = NULL)
+    {
+        // first key is the id of the book itself
+        $graph = array($this->getId() => array());
+        foreach ($this->elements as $element) {
+            
+            // Filter items by parent type
+            // Sometimes we filter leaf nodes which have small c as parent and only take those with BigC
+            if ($parentFilter) {
+                if (!LSE_Util::checkParentType($element->getId(), $parentFilter)) {
+                    continue;
+                }
+            }
+            
+            $idParts = LSE_Util::getIdParts($element->getId());
+            
+            // we assume when a child comes, its parent would already be added to the graph
+            $tree = &$graph;
+            foreach ($idParts as $idPart) {
+                if (isset($tree[ $idPart ])) {
+                    $tree = &$tree[ $idPart ];
+                } else {
+                    $tree[ $idPart ] = array();
+                    $tree = &$tree[ $idPart ];
+                }
+            }
+        }
+        
+        return $graph;
+    }
+    
+    public function getElementTable($parentFilter = NULL)
+    {
+        $elementTable = array($this->getId() => array($this->getId(), $this->getTitle()));
+        foreach ($this->elements as $element) {
+            if ($parentFilter) {
+                if (!LSE_Util::checkParentType($element->getId(), $parentFilter)) {
+                    continue;
+                }
+            }
+            $idParts = LSE_Util::getIdParts($element->getId());
+            $lastId = $idParts[ count($idParts) - 1];
+            $elementTable[$lastId] = array(
+                $element->getId(),
+                $element->getOption('title'),
+            );
+        }
+        return $elementTable;
+    }
 }

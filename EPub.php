@@ -52,11 +52,17 @@ class LSE_Epub
     public function render()
     {
         $output = $this->book->render();
+        $graph = $this->book->buildGraph(array("l", "C"));
+        $elementTable = $this->book->getElementTable(array("l", "C"));
+        print_r($graph);
+        exit(0);
         
         require_once('PHPePub/EPub.php');
         $epub = $this->getEpub();
 
-        $epub->addChapter($this->book->getTitle(), 'Chapter1', $output);
+        $epub->addChapter($this->book->getTitle(), 'Chapter1', $output, false, EPub::EXTERNAL_REF_IGNORE, "", 
+            array('graph' => $graph, 'elementTable' => $elementTable)
+        );
         $epub->finalize();
         file_put_contents('/tmp/test.epub', $epub->sendBook("Example1Book"));
         return NULL;
@@ -76,8 +82,9 @@ class LSE_Epub
         $book->setRights("Copyright and licence information specific for the book."); // As this is generated, this _could_ contain the name or licence information of the user who purchased the book, if needed. If this is used that way, the identifier must also be made unique for the book.
         $book->setSourceURL("http://JohnJaneDoePublications.com/books/TestBook.html");
         
-        $cssData = "body {\n  margin-left: .5em;\n  margin-right: .5em;\n  text-align: justify;\n}\n\np {\n  font-family: serif;\n  font-size: 10pt;\n  text-align: justify;\n  text-indent: 1em;\n  margin-top: 0px;\n  margin-bottom: 1ex;\n}\n\nh1, h2 {\n  font-family: sans-serif;\n  font-style: italic;\n  text-align: center;\n  background-color: #6b879c;\n  color: white;\n  width: 100%;\n}\n\nh1 {\n    margin-bottom: 2px;\n}\n\nh2 {\n    margin-top: -2px;\n    margin-bottom: 2px;\n}\n";
+        // $cssData = "body {\n  margin-left: .5em;\n  margin-right: .5em;\n  text-align: justify;\n}\n\np {\n  font-family: serif;\n  font-size: 10pt;\n  text-align: justify;\n  text-indent: 1em;\n  margin-top: 0px;\n  margin-bottom: 1ex;\n}\n\nh1, h2 {\n  font-family: sans-serif;\n  font-style: italic;\n  text-align: center;\n  background-color: #6b879c;\n  color: white;\n  width: 100%;\n}\n\nh1 {\n    margin-bottom: 2px;\n}\n\nh2 {\n    margin-top: -2px;\n    margin-bottom: 2px;\n}\n";
 
+        $cssData = file_get_contents(dirname(__FILE__) . '/files/style.css');
         $book->addCSSFile("styles.css", "css1", $cssData);
 
         return $book;

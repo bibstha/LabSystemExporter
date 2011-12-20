@@ -82,10 +82,9 @@ class LSE_Decorator
     public function decorateLowP($content, $element)
     {
         // $template = "<h3 class='section' id='%s'>%s</h3>\n";
-        $template .= "<div class='collection_content'>%s</div>\n";
+        $template = "<div class='collection_content' id='%s'>%s</div>\n";
         $this->decorateDefault($content, $element);
-        return sprintf($template, $element->getId(), htmlentities($element->getOption('title')), 
-            LSE_Util::filterPTag($element->getContent()));
+        return sprintf($template, $element->getId(), LSE_Util::filterPTag($element->getContent()));
     }
     
     public function decorateLowI($content, $element)
@@ -99,8 +98,8 @@ class LSE_Decorator
     
     public function decorateLowM($content, $element)
     {
-        $template = "<h3 class='section' id='%s'>%s</h3>\n";
-        $template .= "<div class='collection_content'>%s</div>\n";
+        // $template = "<h3 class='section' id='%s'>%s</h3>\n";
+        $template = "<div class='collection_content' id='%s'>%s</div>\n";
         $this->decorateDefault($content, $element);
         return sprintf($template, $element->getId(), $element->getOption('question'), 
             $element->getOption('answerArray'));

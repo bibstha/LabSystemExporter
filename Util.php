@@ -19,15 +19,23 @@ class LSE_Util
         return substr($string, 0, 1);
     }
     
+    /**
+     * Checks whether given parentTypes are the immediate parent of element identified by fullId
+     * 
+     * @param unknown_type $fullId
+     * @param unknown_type $parentType
+     */
     public static function checkParentType($fullId, $parentType)
     {
+        if ( !is_array($parentType) ) {
+            $parentType = array($parentType);
+        }
         $parts = self::getIdParts($fullId);
         if (($numOfParts = count($parts)) < 2) return false;
         
         $parentId = $parts[ $numOfParts - 2 ];
-        $parentType = self::getTypeFromPart($parentId);
-        
-        return $parentType;
+        $actualParentType = self::getTypeFromPart($parentId);
+        return (in_array($actualParentType, $parentType));
     }
     
     public static function filterPTag($string)
@@ -47,5 +55,5 @@ class LSE_Util
         }
     
         return $innerHTML;
-    } 
+    }
 }
