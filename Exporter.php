@@ -1,37 +1,62 @@
 <?php
 /**
- * A Bridge class between Labsystem to PHPePUB
- *
- * Architecturally, the class behaves as a Controller in an MVC patter. It uses LSE_Element objects as Models
- * to store the data passed through the save function. It uses an instance of Decorator to generate output
- * required.
+ * Setting up include path to contain the plugins folder
  * 
- * Responsibilities
- * - Models : Save the rendered html string
- * - Decorator (View) : Put extra elements around it make it suitable for output
- * - PHPePUB : Class which stores the output
- *
- * @author Bibek Shrestha <bibekshrestha@gmail.com>
- * @todo Call PHPePUB class structures
+ * This way we can import classes with include_once('PluginName/PluginClass.php')
  */
-
 set_include_path(implode(PATH_SEPARATOR, array(
     get_include_path(),
     realpath(INCLUDE_DIR . "/../plugins")
 )));
 
-// Assuming we run our script from path/view/filename.php, the constant will point relative to the main folder
+/**
+ * Assuming we run our script from path/view/filename.php, 
+ * LSE_PATH_LABSYSTEM will point to path/view
+ */
 define('LSE_PATH_LABSYSTEM', getcwd());
 include_once('LSE/EPub.php');
 
+/**
+ * An exporter class to export LabSystem (LS) lessons to other formats
+ *
+ * Implements Facade pattern.
+ * Exposes save() and render() functions to the main LS and delegates the task to
+ * one of the available Engines.
+ * 
+ * Note: This class can be used in two ways.
+ *   1. Create instance of the class using the normal way
+ *      $exporter = new LSE_Exporter();
+ *      $exporter->save();
+ *      $exporter->render();
+ *      
+ *   2. Another way to use the class would be to let itself create an instance and store it
+ *      $exporter = LSE_Exporter::getInstance();
+ *      $exporter->save();
+ *      $exporter->render();
+ *      
+ *      The second type maintains only one instance. This allows main LS to not worry about maintining a global
+ *      scope of the object.
+ * 
+ * @author Bibek Shrestha <bibekshrestha@gmail.com>
+ */
 class LSE_Exporter
 {
+    /**
+     * 
+     * Store an instance of self, LSE_Exporter
+     * @var LSE_Exporter
+     */
     static protected $instance;
-    protected $filename;
+    
+    /**
+     * The engine doing the actual conversion
+     * @var LSE_Engine
+     */
     protected $exportEngine;
     
     /**
      * behaves as a Registry for one single instance of the object
+     * @return LSE_Exporter
      */
     public static function getInstance()
     {
@@ -41,6 +66,9 @@ class LSE_Exporter
         return self::$instance;
     }
     
+    /**
+     * Deletes the instance of of LSE_Exporter
+     */
     public static function removeInstance()
     {
         self::$instance = null;
@@ -62,7 +90,7 @@ class LSE_Exporter
      */
     function save($type, $id, $content, array $options = array())
     {
-        $this->exportEngine->save($type, $id, $content, $options);
+        return $this->exportEngine->save($type, $id, $content, $options);
     }
     
     public function render()

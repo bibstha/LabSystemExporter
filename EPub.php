@@ -1,17 +1,27 @@
 <?php
-error_reporting(E_ALL & ~E_NOTICE);
+// error_reporting(E_ALL & ~E_NOTICE);
+require_once('LSE/Decorator.php');
+require_once('LSE/Book.php');
+require_once('LSE/Element.php');
+require_once('LSE/Engine.php');
 
 /**
  * EPub Engine for exporting
  * 
+ * Architecturally, the class behaves as a Controller in an MVC patter. It uses LSE_Element objects as Models
+ * to store the data passed through the save function. 
+ * 
+ * It uses an instance of Decorator to generate output.
+ * 
+ * Responsibilities
+ * - Models : Save the rendered html string
+ * - Decorator (View) : Put extra elements around it make it suitable for output
+ * - PHPePUB : Class which stores the output
+ * 
  * @author Bibek Shrestha <bibekshrestha@gmail.com>
- *
+ * @todo PHPePub implementation can be improved.
  */
-require_once('LSE/Decorator.php');
-require_once('LSE/Book.php');
-require_once('LSE/Element.php');
-
-class LSE_Epub
+class LSE_Epub implements LSE_Engine
 {
     protected $decorator;
     protected $book;
@@ -22,6 +32,9 @@ class LSE_Epub
         $this->book = new LSE_Book();
     }
     
+    /**
+     * @todo this would throw an exception if l element has not been initialized.
+     */
     public function save($type, $id, $content, array $options = array())
     {
         if ('l' == $type) {
