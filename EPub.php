@@ -68,7 +68,6 @@ class LSE_Epub implements LSE_Engine
         $graph = $this->book->buildGraph(array("l", "C"));
         $elementTable = $this->book->getElementTable(array("l", "C"));
         
-        require_once('PHPePub/EPub.php');
         $epub = $this->getEpub();
         $epub->addChapter($this->book->getTitle(), 'Chapter1', $output, false, EPub::EXTERNAL_REF_ADD, 
             '',
@@ -82,7 +81,8 @@ class LSE_Epub implements LSE_Engine
     
     public function getEpub()
     {
-        $book = new EPub();
+        require_once('LSE/Plugin.php');
+        $book = new LSE_Plugin();
         
         $book->setTitle($this->book->getTitle());
         $book->setIdentifier("http://ilab.net.in.tum.de/", EPub::IDENTIFIER_URI); // Could also be the ISBN number, prefered for published books, or a UUID.

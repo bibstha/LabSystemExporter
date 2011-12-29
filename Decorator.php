@@ -1,6 +1,7 @@
 <?php
 
 require_once('LSE/Util.php');
+require_once('LSE/includes/SPT/View.php');
 
 class LSE_Decorator
 {
@@ -44,56 +45,52 @@ class LSE_Decorator
     
     public function decorateBook($content, $element)
     {
-        $contentTemplate = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-            . "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\"\n"
-            . "    \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
-            . "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
-            . "<head>"
-            . "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n"
-            . "<link rel=\"stylesheet\" type=\"text/css\" href=\"../css/labsys_epub_theme.css\" />\n"
-            . "<title>%1\$s</title>\n"
-            . "</head>\n"
-            . "<body>\n"
-            . "<div id='titlepage'>"
-            . "    <h1 id='%3\$s' class='part-title'>%1\$s</h1>\n"
-            . "    <h3 class='title-break'> *** </h3>"
-            . "    <h3 class='author'> %4\$s </h3>"
-            . "    <div>%5\$s</div>"
-            . "</div>"
-            . "%2\$s\n"
-            . "</body></html>";
-        
-        $content = sprintf($contentTemplate, $element->getTitle(), $content, $element->getId(), $element->getAuthors(),
-            $element->getComment());
-//        var_dump($content); exit(0);
-        return $content;
+        $oView = new SPT_View();
+        $vars = array(
+            'title'   => $element->getTitle(),
+            'content' => $content,
+            'id'      => $element->getId(),
+            'author'  => utf8_encode($element->getAuthors()),
+            'comment' => $element->getComment(),
+        );
+        $oView->assign($vars);
+        return $oView->render(LSE_ROOT . "/templates/decorators/book.phtml", true);
     }
     
     public function decorateBigC($content, $element)
     {
-        $template = "<h3 class='section' id='%s'>%s</h3>\n";
+        
+        $template = "<h3 class='bigC section' id='%s'>%s</h3>\n";
         return sprintf($template, $element->getId(), htmlentities($element->getOption('title')));
         // Do nothing since we will have this element in Lc as well
     }
     
     public function decorateLowC($content, $element)
     {
-//        var_dump($element->getOptions()); 
-        $template = "<h3 class='section' id='%s'>%s</h3>\n";
-        // $template .= "<div class='collection_content'>%s</div>\n";
+        $class = 'lowC section';
+        if ( LSE_Util::checkParentType($element->getId(), "C")) {
+            $class .= " parentBigC";
+        }
+        elseif ( LSE_Util::checkParentType($element->getId(), "l")) {
+            $class .= " parentLowL"; 
+        }
+        $template = "<h3 class='$class' id='%s'>%s</h3>\n";
         return sprintf($template, $element->getId(), htmlentities($element->getOption('title')));
     }
     
     public function decorateLowP($content, $element)
     {
-        // $template = "<h3 class='section' id='%s'>%s</h3>\n";
-        $template = "<div class='collection_content' id='%s'>%s</div>\n";
+        $class = 'lowC collection_content';
+        if ( LSE_Util::checkParentType($element->getId(), "C")) {
+            $class .= ' parentBigC';
+        }
+        $template = "<div class='$class' id='%s'>%s</div>\n";
         return sprintf($template, $element->getId(), LSE_Util::filterPTag($element->getContent()));
     }
     
     public function decorateLowI($content, $element)
     {
-        $template = "<div class='section' id='%s'>"
+        $template = "<div class='section donotbreak lowI' id='%s'>"
             . "<img class='input_txt' src='../syspix/epub_symbol_input.gif'/>"
             . "<h3>%s</h3>\n";
         $template .= "<div class='collection_content'>"
@@ -107,8 +104,8 @@ class LSE_Decorator
     public function decorateLowM($content, $element)
     {
         // $template = "<h3 class='section' id='%s'>%s</h3>\n";
-        $template = "<div class='collection_content' id='%s'>" 
-            . "<img class='input_mul' src='../syspix/epub_symbol_multiple-choice.gif'/>"
+        $template = "<div class='collection_content donotbreak lowM' id='%s'>" 
+            . "<img class='input_mul' src='../syspix/epub_symbol_mulch.gif'/>"
             . "%s"
             . "<div class='input_mul_text'>%s</div>"
             . "</div>\n";

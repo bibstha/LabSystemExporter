@@ -40,6 +40,7 @@ class LSE_Util
     
     public static function filterPTag($string)
     {
+        $string = utf8_encode($string);
         $string = preg_replace_callback('/(href[\s]*=[\s]*")(\.\.\/.*)"/', 
             array('LSE_Util', 'relativeToAbsoluteURI'), $string); 
             
@@ -81,5 +82,21 @@ class LSE_Util
         require_once('LSE/includes/url_to_absolute.php');
         $absoluteUrl =  url_to_absolute( $baseUrl, $relativeUrl );
         return $matches[1] . $absoluteUrl . '"';
+    }
+    
+    public static function fileExists($filename, $useIncludePath = null)
+    {
+        if (!$useIncludePath) {
+            return file_exists($filename);
+        }
+        else {
+            $ps = explode(":", ini_get('include_path'));
+            foreach ($ps as $path)
+            {
+                if (file_exists($path.'/'.$filename)) return true;
+            }
+            if (file_exists($filename)) return true;
+            return false;
+        }
     }
 }

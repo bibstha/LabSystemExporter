@@ -14,6 +14,7 @@ set_include_path(implode(PATH_SEPARATOR, array(
  * LSE_PATH_LABSYSTEM will point to path/view
  */
 define('LSE_PATH_LABSYSTEM', getcwd());
+define('LSE_ROOT', dirname(__FILE__));
 include_once('LSE/EPub.php');
 
 /**
