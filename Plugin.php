@@ -6,9 +6,9 @@ require_once('LSE/Util.php');
  * PHPePub themselves.
  */
 if (!LSE_Util::fileExists('PHPePub/EPub.php', true)) {
-    $output = "PHPePub library is missing. Please download it from <a href='https://github.com/Grandt/PHPePub'>Here</a>
-               Install it at labsystem/plugins so that labsystem/plugins/PHPePub/Epub.php file exists.";
-    print nl2br($output);
+    require_once('LSE/includes/SPT/View.php');
+    $oView = new SPT_View();
+    $oView->render(LSE_ROOT . '/templates/library-not-found.phtml');
     exit(0);
 }
 

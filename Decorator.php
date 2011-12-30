@@ -90,37 +90,26 @@ class LSE_Decorator
     
     public function decorateLowI($content, $element)
     {
-        $template = "<div class='section donotbreak lowI' id='%s'>"
-            . "<img class='input_txt' src='../syspix/epub_symbol_input.gif'/>"
-            . "<h3>%s</h3>\n";
-        $template .= "<div class='collection_content'>"
-            . "%s"
-            . "<div class='input_textarea'></div>"
-            . "</div></div>\n";
-        return sprintf($template, $element->getId(), htmlentities($element->getOption('title')), 
-            LSE_Util::filterPTag($element->getContent()));
+        $oView = new SPT_View();
+        $vars = array(
+            'id'       => $element->getId(),
+            'question' => $element->getContent(),
+        );
+        $oView->assign($vars);
+        $output = $oView->render(LSE_ROOT . '/templates/decorators/lowI.phtml', true);
+        return $output;
     }
     
     public function decorateLowM($content, $element)
     {
-        // $template = "<h3 class='section' id='%s'>%s</h3>\n";
-        $template = "<div class='collection_content donotbreak lowM' id='%s'>" 
-            . "<img class='input_mul' src='../syspix/epub_symbol_mulch.gif'/>"
-            . "%s"
-            . "<div class='input_mul_text'>%s</div>"
-            . "</div>\n";
-        $answerTemplate = "<li>[ ] %s</li>\n";
-        $answer = '';
-        foreach ($element->getOption('answerArray') as $oneAnswer) {
-//            var_dump($answer);
-            $answer .= sprintf($answerTemplate, $oneAnswer);
-        }
-        if ( $answer != '' ) {
-            $answer = "<ul>$answer</ul>";
-        }
-        
-        
-        return sprintf($template, $element->getId(), LSE_Util::filterPTag($element->getOption('question')), 
-            LSE_Util::filterPTag($answer));
+        $oView = new SPT_View();
+        $vars = array(
+            'id'       => $element->getId(),
+            'question' => $element->getOption('question'),
+            'answers'  => $element->getOption('answerArray'),
+        );
+        $oView->assign($vars);
+        $output = $oView->render(LSE_ROOT . '/templates/decorators/lowM.phtml', true);
+        return $output;
     }
 }
