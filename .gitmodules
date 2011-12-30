@@ -1,0 +1,3 @@
+[submodule "includes/SPT"]
+	path = includes/SPT
+	url = git://github.com/bibstha/SimplePhpTemplate.git
