@@ -41,6 +41,8 @@ class LSE_Util
     public static function filterPTag($string)
     {
         $string = utf8_encode($string);
+        // Debug when HTML errors occur...
+        // echo( '<br><hr>'.htmlentities( $string ).'<hr><br>' );
         $string = preg_replace_callback('/(href[\s]*=[\s]*")(\.\.\/.*)"/', 
             array('LSE_Util', 'relativeToAbsoluteURI'), $string); 
             

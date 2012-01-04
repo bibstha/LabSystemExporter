@@ -10,7 +10,7 @@ $answers  = $this->answers;
     <?php if (is_array($answers) && count($answers)): ?>
         <ul>
         <?php foreach ($answers as $answer): ?>
-            <li>[ ] <?php print LSE_Util::filterPTag($answer) ?></li>
+            <li><?php print LSE_Util::filterPTag($answer) ?></li>
         <?php endforeach; ?>
         </ul>
     <?php endif; ?>

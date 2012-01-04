@@ -69,13 +69,19 @@ class LSE_Epub implements LSE_Engine
         $elementTable = $this->book->getElementTable(array("l", "C"));
         
         $epub = $this->getEpub();
-        $epub->addChapter($this->book->getTitle(), 'Chapter1', $output, false, EPub::EXTERNAL_REF_ADD, 
-            '',
-            array('graph' => $graph, 'elementTable' => $elementTable)
-        );
-        $epub->finalize();
-        $bookTitle = str_replace(' ', '_', strtolower($this->book->getTitle()));
-        $epub->sendBook($bookTitle);
+        if (LSE_DEBUG) {
+            print $this->buildNavigation($graph, $elementTable);
+            print $output;
+        }
+        else {
+            $epub->addChapter($this->book->getTitle(), 'Chapter1', $output, false, EPub::EXTERNAL_REF_ADD, 
+                '',
+                array('graph' => $graph, 'elementTable' => $elementTable)
+            );
+            $epub->finalize();
+            $bookTitle = str_replace(' ', '_', strtolower($this->book->getTitle()));
+            $epub->sendBook($bookTitle);
+        }
         return NULL;
     }
     
@@ -96,5 +102,26 @@ class LSE_Epub implements LSE_Engine
         
         $book->setDocRoot(LSE_PATH_LABSYSTEM);
         return $book;
+    }
+    
+    public function buildNavigation($graph, $elementTable)
+    {
+//        var_dump($graph);
+//        var_dump($elementTable);
+        
+        if ( ! count($graph) )
+            return '';
+        
+        $outputTemplate = "<li><a href='#%s'>%s %s</a></li>";
+        $output = '';
+        foreach ( $graph as $id => $element ) {
+            $elementId = $elementTable[$id][0];
+            $elementLabel = $elementTable[$id][1];
+            $childOutput = $this->buildNavigation($element, $elementTable);
+            
+            $output .= sprintf($outputTemplate, $elementId, $elementLabel, $childOutput);
+        }
+        
+        return "<ul>$output</ul>";
     }
 }
