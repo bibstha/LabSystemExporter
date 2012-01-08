@@ -21,7 +21,7 @@ define('LSE_ROOT', dirname(__FILE__));
  * Enter description here ...
  * @var unknown_type
  */
-define('LSE_DEBUG', true);
+define('LSE_DEBUG', false);
 
 include_once('LSE/EPub.php');
 

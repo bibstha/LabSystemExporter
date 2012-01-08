@@ -68,9 +68,15 @@ class LSE_Plugin extends EPub
                 // added by Bibek Shrestha
                 // temporary hack, should use other classes as necessary
                 // each array element has id, ChapterName
-                //                print_r($this->buildExtraNavString($extraNav['graph'], $extraNav['elementTable']));
-                $startx = 1;
-                $this->ncx_navmap = $this->buildExtraNavString($extraNav['graph'], $extraNav['elementTable'], $startx, $fileName);
+                // print_r($this->buildExtraNavString($extraNav['graph'], $extraNav['elementTable']));
+                $startx = 1; // toc already takes first position
+                /*
+                $this->ncx_navmap = "<navPoint id='tableOfcontents' playOrder='1'>\n" . 
+                    "<navLabel><text>Table Of Contents</text></navLabel>\n" . 
+                    "<content src='$fileName#tableOfContents'/>\n" . 
+                    "</navPoint>\n";
+                // */
+                $this->ncx_navmap .= $this->buildExtraNavString($extraNav['graph'], $extraNav['elementTable'], $startx, $fileName);
             }
         
         } else 

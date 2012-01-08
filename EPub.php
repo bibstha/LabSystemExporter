@@ -68,9 +68,12 @@ class LSE_Epub implements LSE_Engine
         $graph = $this->book->buildGraph(array("l", "C"));
         $elementTable = $this->book->getElementTable(array("l", "C"));
         
+//        print_r($elementTable); exit(0);
+        $firstElement = each($graph);
+        $graph[ $firstElement['key'] ] = array_merge( array('toc' => array()), $firstElement['value']);
+        $elementTable['toc'] = array('toc', 'Table of Contents');
         $epub = $this->getEpub();
         if (LSE_DEBUG) {
-            print $this->buildNavigation($graph, $elementTable);
             print $output;
         }
         else {
@@ -102,26 +105,5 @@ class LSE_Epub implements LSE_Engine
         
         $book->setDocRoot(LSE_PATH_LABSYSTEM);
         return $book;
-    }
-    
-    public function buildNavigation($graph, $elementTable)
-    {
-//        var_dump($graph);
-//        var_dump($elementTable);
-        
-        if ( ! count($graph) )
-            return '';
-        
-        $outputTemplate = "<li><a href='#%s'>%s %s</a></li>";
-        $output = '';
-        foreach ( $graph as $id => $element ) {
-            $elementId = $elementTable[$id][0];
-            $elementLabel = $elementTable[$id][1];
-            $childOutput = $this->buildNavigation($element, $elementTable);
-            
-            $output .= sprintf($outputTemplate, $elementId, $elementLabel, $childOutput);
-        }
-        
-        return "<ul>$output</ul>";
     }
 }

@@ -20,6 +20,17 @@ class LSE_Util
     }
     
     /**
+     * Returns the type from Id
+     * @param string $id
+     */
+    public static function getTypeFromId($id)
+    {
+        $idParts = self::getIdParts($id);
+        if (!count($idParts)) return false;
+        return self::getTypeFromPart( $idParts[ count($idParts) - 1]);
+    }
+    
+    /**
      * Checks whether given parentTypes are the immediate parent of element identified by fullId
      * 
      * @param unknown_type $fullId

@@ -4,6 +4,7 @@ $id       = $this->id;
 $question = $this->question;
 $answers  = $this->answers;
 ?>
+<!-- Start LowM : <?php print $id?> -->
 <div class='collection_content donotbreak lowM' id='<?php print $id ?>'>
     <?php print LSE_Util::filterPTag($question) ?> 
     <div class='input_mul_text'>
@@ -16,3 +17,4 @@ $answers  = $this->answers;
     <?php endif; ?>
     </div>
 </div>
+<!-- End LowM : <?php print $id?> -->

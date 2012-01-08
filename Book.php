@@ -81,7 +81,7 @@ class LSE_Book extends LSE_Element
         foreach ($this->elements as $element) {
             
             // Filter items by parent type
-            // Sometimes we filter leaf nodes which have small c as parent and only take those with BigC
+            // Sometimes we filter out leaf nodes which have small c as parent and only take those with BigC
             if ($parentFilter) {
                 if (!LSE_Util::checkParentType($element->getId(), $parentFilter)) {
                     continue;
@@ -122,5 +122,63 @@ class LSE_Book extends LSE_Element
             );
         }
         return $elementTable;
+    }
+    
+    /**
+     * Book elements need to be rendered is specific order. The function takes care of that ordering.
+     * 
+     * @see LSE_Element::render()
+     */
+    public function render()
+    {
+        $graph        = $this->buildGraph();
+        $firstElement = each($graph);
+        $output       = $this->renderRecursiveGraph($firstElement['value']);
+        $toc          = $this->renderTableOfContents();
+        $this->addOption('toc', $toc);
+        return $this->decorator->decorate($this->type, $output, $this);
+    }
+    
+    protected function renderRecursiveGraph($graph)
+    {
+        if (!count($graph)) return '';
+        
+        $output = '';
+        foreach ($graph as $elementId => $subGraph) {
+            $subGraphOutput = $this->renderRecursiveGraph($subGraph);
+            $element = $this->elements[$elementId];
+            $elementOutput = $element->decorator->decorate($element->type, $subGraphOutput, $element);
+            $output .= $elementOutput;
+        }
+        
+        return $output;
+    }
+    
+    protected function renderTableOfContents()
+    {
+        $graph = $this->buildGraph(array("l", "C"));
+        $elementTable = $this->getElementTable(array("l", "C"));
+        return $this->buildNavigation($graph, $elementTable);
+    }
+    
+    public function buildNavigation($graph, $elementTable)
+    {
+//        var_dump($graph);
+//        var_dump($elementTable);
+        
+        if ( ! count($graph) )
+            return '';
+        
+        $outputTemplate = "<li><a href='#%s'>%s</a>%s</li>\n";
+        $output = '';
+        foreach ( $graph as $id => $element ) {
+            $elementId = $elementTable[$id][0];
+            $elementLabel = $elementTable[$id][1];
+            $childOutput = $this->buildNavigation($element, $elementTable);
+            
+            $output .= sprintf($outputTemplate, $elementId, htmlspecialchars($elementLabel), $childOutput);
+        }
+        
+        return "<ul>\n$output</ul>\n";
     }
 }

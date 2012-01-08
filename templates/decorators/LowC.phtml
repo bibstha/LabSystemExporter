@@ -1,0 +1,16 @@
+<?php
+// Available Variables
+$id               = $this->id;
+$title            = $this->title;
+$content          = $this->content;
+$includePageBreak = $this->includePageBreak;
+?>
+<!-- Start LowC : <?php print $id?> -->
+<h3 id='<?php print $id ?>' class='LowC'>
+    <?php print htmlentities($title) ?>
+</h3>
+<?php print $content ?> 
+<?php if ($includePageBreak): ?>
+    <div class='pageBreakAfter'></div>
+<?php endif; ?>
+<!-- End LowC : <?php print $id?> -->
