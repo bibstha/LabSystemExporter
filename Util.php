@@ -51,16 +51,26 @@ class LSE_Util
     
     public static function filterPTag($string)
     {
+        // @todo LowC sometimes has & instead of escaped &amp; for example in PasteBin & Feedback
         $string = utf8_encode($string);
         // Debug when HTML errors occur...
         // echo( '<br><hr>'.htmlentities( $string ).'<hr><br>' );
         $string = preg_replace_callback('/(href[\s]*=[\s]*")(\.\.\/.*)"/', 
-            array('LSE_Util', 'relativeToAbsoluteURI'), $string); 
-            
-        $domDoc = new DOMDocument();
-        $domDoc->loadHTML($string);
+        array('LSE_Util', 'relativeToAbsoluteURI'), $string); 
         
-        return self::get_inner_html($domDoc->documentElement->firstChild);
+        $domDoc = new DOMDocument();
+        $domDoc->recover = true;
+        $domDoc->strictErrorChecking = false;
+        
+        // we need to wrap it inside div because by default if we just put normal text, it is wrapped inside 
+        // a p tag eg, if string is "a <p>b</p> c" then result string would be "<p>a </p><p>b</p> c" Note last c is
+        // not enclosed in p. Strange
+        $domDoc->loadHTML("<div>$string</div>");
+        return self::get_inner_html($domDoc->documentElement->firstChild->firstChild);
+//        print $result . "///////////////////////\n";
+//        if (strpos($string, "Paste") === 0)
+//            var_dump(debug_backtrace());
+//        return $result;
     }
     
     public static function get_inner_html( $node )
@@ -111,5 +121,17 @@ class LSE_Util
             if (file_exists($filename)) return true;
             return false;
         }
+    }
+    
+    public static function string_decode($string)
+    {
+        return $string;
+//        return html_entity_decode($string, ENT_COMPAT, 'UTF-8');
+    }
+    
+    public static function string_encode($string)
+    {
+        return $string;
+//        return htmlentities($string, ENT_COMPAT, 'UTF-8');
     }
 }

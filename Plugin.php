@@ -128,7 +128,10 @@ class LSE_Plugin extends EPub
             $elementLabel = $elementTable[$id][1];
             $childOutput = $this->buildExtraNavString($element, $elementTable, $startId, $fileName);
             
-            $output .= sprintf($outputTemplate, $elementId, $elementStartId, htmlentities($elementLabel), $elementId, $childOutput);
+            // @todo same problem here, string "PasteBin & Feedback" was received at some point
+            $output .= sprintf($outputTemplate, $elementId, $elementStartId, 
+                LSE_Util::filterPTag(htmlspecialchars($elementLabel, ENT_COMPAT, 'UTF-8', false))
+                , $elementId, $childOutput);
         }
         
         return $output;

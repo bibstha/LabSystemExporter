@@ -173,10 +173,11 @@ class LSE_Book extends LSE_Element
         $output = '';
         foreach ( $graph as $id => $element ) {
             $elementId = $elementTable[$id][0];
-            $elementLabel = $elementTable[$id][1];
+            $elementLabel = LSE_Util::filterPTag(htmlspecialchars($elementTable[$id][1], ENT_COMPAT, 'UTF-8', false));
             $childOutput = $this->buildNavigation($element, $elementTable);
             
-            $output .= sprintf($outputTemplate, $elementId, htmlspecialchars($elementLabel), $childOutput);
+            // @todo this should not be here, move into templates somehow
+            $output .= sprintf($outputTemplate, $elementId, $elementLabel, $childOutput);
         }
         
         return "<ul>\n$output</ul>\n";

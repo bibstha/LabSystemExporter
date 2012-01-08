@@ -1,10 +1,12 @@
 <?php
 // Available Variables
 $id       = $this->id;
-$title    = $this->title;
+$title    = LSE_Util::filterPTag($this->title);
 $content  = $this->content;
 ?>
+<!-- Start BigC : <?php print $id?> -->
 <div class="BigC BigCWrapper">
-    <h3 id='<?php print $id ?>'><?php print htmlentities($title) ?></h3>
+    <h3 id='<?php print $id ?>'><?php print $title ?></h3>
     <?php print $content ?> 
 </div>
+<!-- End BigC : <?php print $id?> -->

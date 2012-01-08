@@ -50,7 +50,7 @@ class LSE_Decorator
             'title'   => $element->getTitle(),
             'content' => $content,
             'id'      => $element->getId(),
-            'author'  => utf8_encode($element->getAuthors()),
+            'author'  => $element->getAuthors(),
             'comment' => $element->getComment(),
             'toc'     => $element->getOption('toc'),
         );
