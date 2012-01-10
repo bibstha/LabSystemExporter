@@ -103,7 +103,7 @@ class LSE_Util
         }
         $relativeUrl = $matches[2];
         require_once('LSE/includes/url_to_absolute.php');
-        $absoluteUrl =  url_to_absolute( $baseUrl, $relativeUrl );
+        $absoluteUrl =  htmlspecialchars(url_to_absolute( $baseUrl, $relativeUrl ), ENT_COMPAT, 'ISO-8859-1', FALSE);
         return $matches[1] . $absoluteUrl . '"';
     }
     
