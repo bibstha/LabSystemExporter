@@ -46,6 +46,7 @@ class LSE_Epub implements LSE_Engine
             $element->setLang( $options['lang'] );
             $element->setComment( $options['comment'] );
             $element->setId( $id );
+            $element->setUserStyleSheetPath( $options['userStyleSheetPath'] );
             
             $this->book = $element;
         }
