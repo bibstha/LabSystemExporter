@@ -58,13 +58,14 @@ class LSE_Decorator
         return $oView->render(LSE_ROOT . "/templates/decorators/book.phtml", true);
     }
     
-    public function decorateBigC($content, $element)
+    public function decorateBigC($childContent, $element)
     {
         $oView = new SPT_View();
         $vars = array(
-            'title'   => $element->getOption('title'),
-            'content' => $content,
-            'id'      => $element->getId(),
+            'title'        => $element->getOption('title'),
+            'childContent' => $childContent,
+            'content'      => $element->getContent(),
+            'id'           => $element->getId(),
         );
         $oView->assign($vars);
         return $oView->render(LSE_ROOT . "/templates/decorators/BigC.phtml", true);
