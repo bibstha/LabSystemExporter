@@ -53,6 +53,7 @@ class LSE_Decorator
             'author'  => $element->getAuthors(),
             'comment' => $element->getComment(),
             'toc'     => $element->getOption('toc'),
+            'userStyleSheetPath' => $element->getUserStyleSheetPath(),
         );
         $oView->assign($vars);
         return $oView->render(LSE_ROOT . "/templates/decorators/book.phtml", true);

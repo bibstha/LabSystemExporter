@@ -15,6 +15,7 @@ class LSE_Book extends LSE_Element
     protected $authors;
     protected $comment;
     protected $lang;
+    protected $userStyleSheetPath;
     
     /**
      * @return the $title
@@ -72,6 +73,16 @@ class LSE_Book extends LSE_Element
     public function setLang($lang)
     {
         $this->lang = $lang;
+    }
+    
+    public function setUserStyleSheetPath($userStyleSheetPath)
+    {
+        $this->userStyleSheetPath = $userStyleSheetPath;
+    }
+    
+    public function getUserStyleSheetPath()
+    {
+        return $this->userStyleSheetPath;
     }
     
     public function buildGraph($parentFilter = NULL)

@@ -12,6 +12,8 @@ $comment = LSE_Util::filterPTag($this->comment); // Comment for the book
 // @todo debug why filterPTag throws an error for table of contents (probably because the links do not exist)
 //$toc     = LSE_Util::filterPTag(htmlspecialchars($this->toc, ENT_COMPAT, 'UTF-8', false));
 $toc     = $this->toc;
+$userStyleSheetPath = $this->userStyleSheetPath;
+
 print "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -19,6 +21,9 @@ print "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" type="text/css" href="../css/sys/labsys_epub_theme.css" />
+<?php if ($userStyleSheetPath):?>
+<link rel="stylesheet" type="text/css" href="<?php print $userStyleSheetPath ?>" />
+<?php endif; ?>
 <title><?php print $title ?></title>
 </head>
 <body>
