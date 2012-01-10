@@ -13,6 +13,7 @@ $content = preg_replace('#(.*href=").*address=(.*)(".*)#', '${1}#${2}${3}', $con
     <h3 id='<?php print $id ?>'><?php print $title ?></h3>
     <?php if (!LSE_Util::checkParentType($id, 'l')): ?>
     <?php print $content ?> 
+    <div class='pageBreakAfter'></div>
     <?php endif; ?>
     <?php print $childContent ?>
 </div>
