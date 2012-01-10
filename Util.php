@@ -55,7 +55,7 @@ class LSE_Util
         $string = utf8_encode($string);
         // Debug when HTML errors occur...
         // echo( '<br><hr>'.htmlentities( $string ).'<hr><br>' );
-        $string = preg_replace_callback('/(href[\s]*=[\s]*")(\.\.\/.*)"/', 
+        $string = preg_replace_callback('/(href[\s]*=[\s]*")(\.\.\/.*)"/U', 
         array('LSE_Util', 'relativeToAbsoluteURI'), $string); 
         
         $domDoc = new DOMDocument();
