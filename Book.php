@@ -2,17 +2,16 @@
 include_once('Element.php');
 
 /**
- * Current assumption is a Book is a single html file.
- * Division of Chapters will be done using TOC
+ * A book is a special LSE_Element
  * 
- * Enter description here ...
+ * A book contains all the elements that are being exported.
+ * A book contains one or many l elements each representing one LAB
+ * 
  * @author bibek
  *
  */
 class LSE_Book extends LSE_Element
 {
-    protected $title;
-    protected $authors;
     protected $comment;
     protected $lang;
     protected $userStyleSheetPath;
@@ -22,7 +21,7 @@ class LSE_Book extends LSE_Element
      */
     public function getTitle()
     {
-        return $this->title;
+        return $this->getOption('title');
     }
 
 	/**
@@ -30,7 +29,7 @@ class LSE_Book extends LSE_Element
      */
     public function getAuthors()
     {
-        return $this->authors;
+        return $this->getOption('author');
     }
 
 	/**
@@ -88,7 +87,7 @@ class LSE_Book extends LSE_Element
     public function buildGraph($parentFilter = NULL)
     {
         // first key is the id of the book itself
-        $graph = array($this->getId() => array());
+        $graph = array();
         foreach ($this->elements as $element) {
             
             // Filter items by parent type
@@ -118,15 +117,34 @@ class LSE_Book extends LSE_Element
         return $graph;
     }
     
-    public function getElementTable($parentFilter = NULL)
+    /**
+     * Returns the list of current child elements. Filtering can be done with
+     * a. ParentType Filter
+     * b. ElementType Filter
+     * 
+     * @param array|string $parentFilter
+     * @param array|string $elementFilter
+     * @return array List of children of Book
+     */
+    public function getElementTable($parentFilter = NULL, $elementFilter = NULL)
     {
-        $elementTable = array($this->getId() => array($this->getId(), $this->getTitle()));
+        $elementTable = array();
         foreach ($this->elements as $element) {
             if ($parentFilter) {
                 if (!LSE_Util::checkParentType($element->getId(), $parentFilter)) {
                     continue;
                 }
             }
+            
+            if ($elementFilter) {
+                if (!is_array($elementFilter)) {
+                    $elementFilter = array($elementFilter);
+                }
+                if ( !in_array(LSE_Util::getTypeFromId($element->getId()), $elementFilter)) {
+                    continue;
+                }
+            }
+            
             $elementTable[$element->getId()] = array(
                 $element->getId(),
                 $element->getOption('title'),
@@ -136,18 +154,52 @@ class LSE_Book extends LSE_Element
     }
     
     /**
+     * Returns an array of all l elements
+     * 
+     * @return array List of all l elements
+     */
+    public function getChapters()
+    {
+        return $this->getElementTable(NULL, 'l');
+    }
+    
+    public function renderMultiChapterFrontPage() {}
+    public function renderMultiChapterTOC() {}
+    
+    /**
+     * Renders the chapter with given id say l3
+     * 
+     * @param unknown_type $chapterId
+     */
+    public function renderChapter($chapterId)
+    {
+        $graph = $this->buildGraph();
+        $graph = $graph[$chapterId];
+        
+        
+        $output = $this->renderRecursiveGraph($graph);
+        $toc    = $this->renderTableOfContents($chapterId );
+        
+        $lElement = $this->elements[$chapterId];
+        $lElement->addOption('toc', $toc);
+        
+        // Let lElement's decorator handle the rendering
+        return $lElement->decorator->decorate($lElement->type, $output, $lElement);
+    }
+
+    /**
      * Book elements need to be rendered is specific order. The function takes care of that ordering.
      * 
      * @see LSE_Element::render()
      */
     public function render()
     {
-        $graph        = $this->buildGraph();
-        $firstElement = each($graph);
-        $output       = $this->renderRecursiveGraph($firstElement['value']);
-        $toc          = $this->renderTableOfContents();
-        $this->addOption('toc', $toc);
-        return $this->decorator->decorate($this->type, $output, $this);
+        $chapters = $this->getChapters();
+        
+        // just take the first chapter of the chapter list and pass it
+        // Only for compatibility purpose.
+        list($chapterId, $chapterValue) = each($chapters);
+        return $this->renderChapter($chapterId);
     }
     
     protected function renderRecursiveGraph($graph)
@@ -165,14 +217,21 @@ class LSE_Book extends LSE_Element
         return $output;
     }
     
-    protected function renderTableOfContents()
+    /**
+     * Chapter id is something like l3
+     * 
+     * @param string $chapterId
+     */
+    protected function renderTableOfContents($chapterId)
     {
-        $graph = $this->buildGraph(array("l", "C"));
-        $elementTable = $this->getElementTable(array("l", "C"));
+        $graph = $this->buildGraph(array('l', 'C'));
+        $graph = array( $chapterId => $graph[$chapterId] ); // we don't want graph for other l elements
+        
+        $elementTable = $this->getElementTable();
         return $this->buildNavigation($graph, $elementTable);
     }
     
-    public function buildNavigation($graph, $elementTable)
+    protected function buildNavigation($graph, $elementTable)
     {
 //        var_dump($graph);
 //        var_dump($elementTable);
@@ -183,6 +242,11 @@ class LSE_Book extends LSE_Element
         $outputTemplate = "<li><a href='#%s'>%s</a>%s</li>\n";
         $output = '';
         foreach ( $graph as $id => $element ) {
+            if (!isset($elementTable[$id])) {
+                print 'Continuing for $id : ' . $id . "\n";
+                continue;
+            }
+//            print 'Building for $id : ' . $id . "\n";
             $elementId = $elementTable[$id][0];
             $elementLabel = LSE_Util::filterPTag(htmlspecialchars($elementTable[$id][1], ENT_COMPAT, 'UTF-8', false));
             $childOutput = $this->buildNavigation($element, $elementTable);
@@ -191,6 +255,11 @@ class LSE_Book extends LSE_Element
             $output .= sprintf($outputTemplate, $elementId, $elementLabel, $childOutput);
         }
         
-        return "<ul>\n$output</ul>\n";
+        if ($output) {
+//            print "============================" . $output; 
+            return "<ul>\n$output</ul>\n";
+        }
+        else
+            return $output;
     }
 }

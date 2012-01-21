@@ -21,7 +21,7 @@ require_once('LSE/Engine.php');
  * @author Bibek Shrestha <bibekshrestha@gmail.com>
  * @todo PHPePub implementation can be improved.
  */
-class LSE_Epub implements LSE_Engine
+class LSE_EPub implements LSE_Engine
 {
     protected $decorator;
     protected $book;
@@ -30,6 +30,39 @@ class LSE_Epub implements LSE_Engine
     {
         $this->decorator = new LSE_Decorator();
         $this->book = new LSE_Book();
+        $this->book->setDecorator($this->decorator);
+    }
+    
+    public function getBook()
+    {
+        return $this->book;
+    }
+    
+    public function setBook($book)
+    {
+        $this->book = $book;
+    }
+    
+    public function getDecorator()
+    {
+        return $this->decorator;
+    }
+    
+    /**
+     * Options are saved from calling classes.
+     * The options usually have EPub specific fields like
+     * - Title
+     * - Author
+     * - Lang
+     * - Comment
+     * - StyleSheetPath
+     * 
+     * <b>Note:</b> This completely overwrites the existing configuration of the Book Object
+     * @param array $options
+     */
+    public function setOptions(array $options)
+    {
+        return $this->book->setOptions($options);
     }
     
     /**
@@ -37,57 +70,65 @@ class LSE_Epub implements LSE_Engine
      */
     public function save($type, $id, $content, array $options = array())
     {
-        if ('l' == $type) {
-            $element = new LSE_Book();
-            $element->setDecorator($this->decorator);
-            
-            $element->setTitle( $options['title'] );
-            $element->setAuthors( $options['authors'] );
-            $element->setLang( $options['lang'] );
-            $element->setComment( $options['comment'] );
-            $element->setId( $id );
-            if ( isset($options['userStyleSheetPath']) )
-                $element->setUserStyleSheetPath( $options['userStyleSheetPath'] );
-            
-            $this->book = $element;
-        }
-        else {
-            $element = new LSE_Element();
-            $element->setDecorator($this->decorator);
-            
-            $element->setType( $type );
-            $element->setId( $id );
-            $element->setContent( $content );
-            $element->setOptions( $options );
-            
-            $this->book->addElement( $element );
-        }
+        $element = new LSE_Element();
+        $element->setDecorator($this->decorator);
+        
+        $element->setType( $type );
+        $element->setId( $id );
+        $element->setContent( $content );
+        $element->setOptions( $options );
+        
+        $this->book->addElement( $element );
     }
     
     public function render()
     {
-        $output = $this->book->render();
-        $graph = $this->book->buildGraph(array("l", "C"));
-        $elementTable = $this->book->getElementTable(array("l", "C"));
+        $epubPlugin = $this->getEpub();
         
-//        print_r($elementTable); exit(0);
-        $firstElement = each($graph);
-        $graph[ $firstElement['key'] ] = array_merge( array('toc' => array()), $firstElement['value']);
-        $elementTable['toc'] = array('toc', 'Table of Contents');
-        $epub = $this->getEpub();
+        $chapters = $this->book->getChapters();
+        $output = '';
+        foreach ($chapters as $chapterId => $chapter) {
+            $output = $this->book->renderChapter($chapterId);
+            
+            if (LSE_DEBUG) {
+                print $output;
+            }
+            else {
+                $epubPlugin->addChapter( $chapterId, $chapterId . '.html', $output, FALSE, EPub::EXTERNAL_REF_ADD);
+            }
+        }
+        
         if (LSE_DEBUG) {
-            print $output;
+            // print $output;
         }
         else {
-            $epub->addChapter($this->book->getTitle(), 'Chapter1', $output, false, EPub::EXTERNAL_REF_ADD, 
-                '',
-                array('graph' => $graph, 'elementTable' => $elementTable)
-            );
-            $epub->finalize();
+            $graph = $this->book->buildGraph(array("l", "C"));
+            $elementTable = $this->book->getElementTable();
+            
+            $epubPlugin->setNcxFromGraph($graph, $elementTable);
+            $isFinalized = $epubPlugin->finalize();
+
+//            var_dump($isFinalized);
             $bookTitle = str_replace(' ', '_', strtolower($this->book->getTitle()));
+            
             // bookTitle is usually htmlencoded, so decode this first
             $bookTitle = LSE_Util::filterPTag($bookTitle);
-            $epub->sendBook($bookTitle);
+            $epubPlugin->sendBook($this->book->getTitle());
+            
+            
+//            $firstElement = each($graph);
+//            $graph[ $firstElement['key'] ] = array_merge( array('toc' => array()), $firstElement['value']);
+//            $elementTable['toc'] = array('toc', 'Table of Contents');
+//            $epub = $this->getEpub();
+//            $epub->addChapter($this->book->getTitle(), 'Chapter1', $output, false, EPub::EXTERNAL_REF_ADD, 
+//                '',
+//                array('graph' => $graph, 'elementTable' => $elementTable)
+//            );
+//            $epub->finalize();
+//            $bookTitle = str_replace(' ', '_', strtolower($this->book->getTitle()));
+//            // bookTitle is usually htmlencoded, so decode this first
+//            $bookTitle = LSE_Util::filterPTag($bookTitle);
+//            $epub->sendBook($bookTitle);
         }
         return NULL;
     }
@@ -98,9 +139,9 @@ class LSE_Epub implements LSE_Engine
         $book = new LSE_Plugin();
         
         $title = LSE_Util::filterPTag($this->book->getTitle());
-//        $title = $this->book->getTitle();
+        $title = $this->book->getTitle();
         $author = LSE_Util::filterPTag($this->book->getAuthors());
-//        $author = $this->book->getAuthors();
+        $author = $this->book->getAuthors();
         
         $book->setTitle($title);
         $book->setIdentifier("http://ilab.net.in.tum.de/", EPub::IDENTIFIER_URI); // Could also be the ISBN number, prefered for published books, or a UUID.

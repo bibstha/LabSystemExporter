@@ -1,18 +1,18 @@
 <?php 
 /**
- * @file ViewFile for Book
+ * @file ViewFile for Ll
  * 
  * Available variables
  */
 $title   = LSE_Util::filterPTag($this->title);   // Title of the book
 $id      = $this->id;      // The id of the book
-$content = $this->content; // The content of the book, no filtering assuming the content is already filtered.
+$childContent = $this->childContent; // The content of the book, no filtering assuming the content is already filtered.
 $author  = LSE_Util::filterPTag($this->author);  // The Author names
 $comment = LSE_Util::filterPTag($this->comment); // Comment for the book
 // @todo debug why filterPTag throws an error for table of contents (probably because the links do not exist)
 //$toc     = LSE_Util::filterPTag(htmlspecialchars($this->toc, ENT_COMPAT, 'UTF-8', false));
 $toc     = $this->toc;
-$userStyleSheetPath = $this->userStyleSheetPath;
+//$userStyleSheetPath = $this->userStyleSheetPath;
 
 print "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 ?>
@@ -21,7 +21,7 @@ print "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <link rel="stylesheet" type="text/css" href="../css/sys/labsys_epub_theme.css" />
-<?php if ($userStyleSheetPath):?>
+<?php if (isset($userStyleSheetPath)):?>
 <link rel="stylesheet" type="text/css" href="<?php print $userStyleSheetPath ?>" />
 <?php endif; ?>
 <title><?php print $title ?></title>
@@ -37,5 +37,5 @@ print "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
     <h3 id='toc'>Table Of contents</h3>
     <?php print $toc ?> 
 </div>
-<?php print $content ?> 
+<?php print $childContent ?> 
 </body></html>

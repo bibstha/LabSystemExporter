@@ -1,28 +1,5 @@
 <?php
-/**
- * Setting up include path to contain the plugins folder
- * 
- * This way we can import classes with include_once('PluginName/PluginClass.php')
- */
-set_include_path(implode(PATH_SEPARATOR, array(
-    get_include_path(),
-    realpath(INCLUDE_DIR . "/../plugins")
-)));
-
-/**
- * Assuming we run our script from path/view/filename.php, 
- * LSE_PATH_LABSYSTEM will point to path/view
- */
-define('LSE_PATH_LABSYSTEM', getcwd());
-define('LSE_ROOT', dirname(__FILE__));
-
-/**
- * If LSE_DEBUG is true, it prints the html to the browser instead sending epub file.
- * Enter description here ...
- * @var unknown_type
- */
-define('LSE_DEBUG', false);
-
+require_once('bootstrap.php');
 include_once('LSE/EPub.php');
 
 /**
@@ -100,6 +77,16 @@ class LSE_Exporter
     function save($type, $id, $content, array $options = array())
     {
         return $this->exportEngine->save($type, $id, $content, $options);
+    }
+    
+    /**
+     * Allow passing configuration options from Exporter to Engine class
+     * 
+     * @param array $option
+     */
+    function setOptions(array $options)
+    {
+        return $this->exportEngine->setOptions($options);
     }
     
     public function render()

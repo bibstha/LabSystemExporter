@@ -100,6 +100,11 @@ class LSE_Element
         $this->elements[$element->getId()] = $element;
     }
     
+    public function getElements()
+    {
+        return $this->elements;
+    }
+    
     /**
      * Returns a rendered element
      *

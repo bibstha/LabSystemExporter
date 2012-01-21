@@ -33,8 +33,8 @@ class LSE_Util
     /**
      * Checks whether given parentTypes are the immediate parent of element identified by fullId
      * 
-     * @param unknown_type $fullId
-     * @param unknown_type $parentType
+     * @param string $fullId
+     * @param array|string $parentType
      */
     public static function checkParentType($fullId, $parentType)
     {
