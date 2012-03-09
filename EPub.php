@@ -98,53 +98,6 @@ class LSE_EPub implements LSE_Engine
             $renderer = new LSE_Renderer_SingleChapter($this);
         }
         return $renderer->render();
-        
-        $chapters = $this->book->getChapters();
-        $output = '';
-        foreach ($chapters as $chapterId => $chapter) {
-            $output = $this->book->renderChapter($chapterId);
-            
-            if (LSE_DEBUG) {
-                print $output;
-            }
-            else {
-                $epubPlugin->addChapter( $chapterId, $chapterId . '.html', $output, FALSE, EPub::EXTERNAL_REF_ADD);
-            }
-        }
-        
-        if (LSE_DEBUG) {
-            // print $output;
-        }
-        else {
-            $graph = $this->book->buildGraph(array("l", "C"));
-            $elementTable = $this->book->getElementTable();
-            
-            $epubPlugin->setNcxFromGraph($graph, $elementTable);
-            $isFinalized = $epubPlugin->finalize();
-
-//            var_dump($isFinalized);
-            $bookTitle = str_replace(' ', '_', strtolower($this->book->getTitle()));
-            
-            // bookTitle is usually htmlencoded, so decode this first
-            $bookTitle = LSE_Util::filterPTag($bookTitle);
-            $epubPlugin->sendBook($this->book->getTitle());
-            
-            
-//            $firstElement = each($graph);
-//            $graph[ $firstElement['key'] ] = array_merge( array('toc' => array()), $firstElement['value']);
-//            $elementTable['toc'] = array('toc', 'Table of Contents');
-//            $epub = $this->getEpub();
-//            $epub->addChapter($this->book->getTitle(), 'Chapter1', $output, false, EPub::EXTERNAL_REF_ADD, 
-//                '',
-//                array('graph' => $graph, 'elementTable' => $elementTable)
-//            );
-//            $epub->finalize();
-//            $bookTitle = str_replace(' ', '_', strtolower($this->book->getTitle()));
-//            // bookTitle is usually htmlencoded, so decode this first
-//            $bookTitle = LSE_Util::filterPTag($bookTitle);
-//            $epub->sendBook($bookTitle);
-        }
-        return NULL;
     }
     
     public function getEpub()

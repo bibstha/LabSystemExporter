@@ -24,7 +24,7 @@ class LSE_Book extends LSE_Element
 
     public function getAuthors()
     {
-        return $this->getOption('author');
+        return $this->getOption('authors');
     }
 
     public function getComment()
