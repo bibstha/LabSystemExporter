@@ -34,6 +34,7 @@ class LSE_Decorator
                 return $this->decorateLowI($childContent, $element);
                 
             default:
+                throw new Exception('Decoratory type ' . $type . ' not found');
                 return $this->decorateDefault($childContent, $element);
         }
     }

@@ -4,6 +4,7 @@ require_once('LSE/Decorator.php');
 require_once('LSE/Book.php');
 require_once('LSE/Element.php');
 require_once('LSE/Engine.php');
+require_once('LSE/Logger.php');
 
 /**
  * EPub Engine for exporting
@@ -23,6 +24,7 @@ require_once('LSE/Engine.php');
  */
 class LSE_EPub implements LSE_Engine
 {
+    protected $_log;
     protected $decorator;
     protected $book;
     
@@ -31,6 +33,8 @@ class LSE_EPub implements LSE_Engine
         $this->decorator = new LSE_Decorator();
         $this->book = new LSE_Book();
         $this->book->setDecorator($this->decorator);
+        
+        $this->_log = new LSE_Logger('LSE_Epub');
     }
     
     public function getBook()
@@ -84,6 +88,16 @@ class LSE_EPub implements LSE_Engine
     public function render()
     {
         $epubPlugin = $this->getEpub();
+        if ($this->book->getOption('isMultiChapterEnabled')) {
+            require_once('LSE/Renderer/MultiChapter.php');
+            $renderer = new LSE_Renderer_MultiChapter($this);
+            
+        }
+        else {
+            require_once('LSE/Renderer/SingleChapter.php');
+            $renderer = new LSE_Renderer_SingleChapter($this);
+        }
+        return $renderer->render();
         
         $chapters = $this->book->getChapters();
         $output = '';

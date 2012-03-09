@@ -12,8 +12,6 @@ include_once('Element.php');
  */
 class LSE_Book extends LSE_Element
 {
-    protected $comment;
-    protected $lang;
     protected $userStyleSheetPath;
     
     /**
@@ -24,28 +22,29 @@ class LSE_Book extends LSE_Element
         return $this->getOption('title');
     }
 
-	/**
-     * @return the $authors
-     */
     public function getAuthors()
     {
         return $this->getOption('author');
     }
 
-	/**
-     * @return the $comment
-     */
     public function getComment()
     {
-        return $this->comment;
+        return $this->getOption('comment');
     }
 
-	/**
-     * @return the $lang
-     */
     public function getLang()
     {
-        return $this->lang;
+        return $this->getOption('lang');
+    }
+    
+    public function getCoverImage()
+    {
+        return $this->getOption('coverImage');
+    }
+    
+    public function getPreface()
+    {
+        return $this->getOption('preface');
     }
 
 	public function __construct()
@@ -56,27 +55,37 @@ class LSE_Book extends LSE_Element
     
     public function setTitle($title)
     {
-        $this->title = $title;
+        $this->addOption('title', $title);
     }
     
     public function setAuthors($authors)
     {
-        $this->authors = $authors;
+        $this->addOption('authors', $authors);
     }
     
     public function setComment($comment)
     {
-        $this->comment = $comment;
+        $this->addOption('comment', $comment);
     }
     
     public function setLang($lang)
     {
-        $this->lang = $lang;
+        $this->addOption('lang' ,$lang);
+    }
+    
+    public function setCoverImage($pathToImage)
+    {
+        $this->addOption('coverImage', $pathToImage);
     }
     
     public function setUserStyleSheetPath($userStyleSheetPath)
     {
         $this->userStyleSheetPath = $userStyleSheetPath;
+    }
+    
+    public function setPreface($preface)
+    {
+        $this->addOption('preface', $preface);
     }
     
     public function getUserStyleSheetPath()
@@ -175,7 +184,6 @@ class LSE_Book extends LSE_Element
     {
         $graph = $this->buildGraph();
         $graph = $graph[$chapterId];
-        
         
         $output = $this->renderRecursiveGraph($graph);
         $toc    = $this->renderTableOfContents($chapterId );

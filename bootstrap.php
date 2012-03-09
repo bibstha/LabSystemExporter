@@ -13,7 +13,9 @@ if (!defined('LSE_ROOT'))
 /**
  * If LSE_DEBUG is true, it prints the html to the browser instead sending epub file.
  */
-define('LSE_DEBUG', FALSE);
+$debug = FALSE;
+//$debug = TRUE;
+define('LSE_DEBUG', $debug);
 
 /**
  * Setting up include path to contain the plugins folder
