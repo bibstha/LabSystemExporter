@@ -78,7 +78,10 @@ class LSE_Renderer_MultiChapter implements LSE_Renderer_Interface
     {
         $preface = $this->_engine->getBook()->getPreface();
         if ($preface) {
-            $this->_plugin->addChapter( 'preface', 'preface.html', $preface, FALSE, EPub::EXTERNAL_REF_ADD);
+            $view = new SPT_View();
+            $view->assign(array('preface' => $preface));
+            $prefaceContent = $view->render(LSE_ROOT . '/templates/multichapter/preface.phtml', true);
+            $this->_plugin->addChapter( 'preface', 'preface.html', $prefaceContent, FALSE, EPub::EXTERNAL_REF_ADD);
         }
     }
     
