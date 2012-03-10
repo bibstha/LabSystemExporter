@@ -1,6 +1,7 @@
 <?php
 require_once('LSE/Renderer/Interface.php');
 require_once('LSE/Logger.php');
+require_once('LSE/Util/CoverImageGenerator.php');
 class LSE_Renderer_MultiChapter implements LSE_Renderer_Interface
 {
     protected $_log;
@@ -25,10 +26,18 @@ class LSE_Renderer_MultiChapter implements LSE_Renderer_Interface
     
     protected function _setupCoverImage()
     {
-        // $this->_log->log($mixed, $name)
         $coverImage = $this->_engine->getBook()->getCoverImage();
-        if ($coverImage) {
-            $this->_plugin->addChapter( 'coverImage', 'coverImage.html', $coverImage, FALSE, EPub::EXTERNAL_REF_ADD);
+        if ( $coverImage ) {
+            $ig = new LSE_Util_CoverImageGenerator();
+            $srcPath = $coverImage;
+            $dstPath = tempnam('/tmp', 'LSE_CoverImage_');
+            $text    = $this->_engine->getBook()->getTitle();
+            $ig->setSrcImagePath($srcPath);
+            $ig->setDstImagePath($dstPath);
+            $ig->setText($text);
+            $ig->generate();
+            $this->_plugin->setCoverImage('coverImage', file_get_contents($dstPath), 'image/png');
+            unlink($dstPath);
         }
     }
     
@@ -46,10 +55,6 @@ class LSE_Renderer_MultiChapter implements LSE_Renderer_Interface
         
         $graphPrefix = array();
         $elementTablePrefix = array();
-        if ($book->getCoverImage()) {
-            $graphPrefix['coverImage'] = array();
-            $elementTablePrefix['coverImage'] = array('coverImage', 'Cover');
-        }
         
         $graphPrefix['multiChapterTocPage'] = array();
         $elementTablePrefix['multiChapterTocPage'] = array('multiChapterTocPage', 'Table of Contents');

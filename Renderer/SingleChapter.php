@@ -1,6 +1,7 @@
 <?php
 require_once('LSE/Renderer/Interface.php');
 require_once('LSE/Logger.php');
+require_once('LSE/Util/CoverImageGenerator.php');
 class LSE_Renderer_SingleChapter implements LSE_Renderer_Interface
 {
     protected $_log;
@@ -16,9 +17,27 @@ class LSE_Renderer_SingleChapter implements LSE_Renderer_Interface
     
     public function render()
     {
+        $this->_setupCoverImage();
         $this->_setupTOC();
         $this->_setupChapters();
         $this->_finalize();
+    }
+    
+    protected function _setupCoverImage()
+    {
+        $coverImage = $this->_engine->getBook()->getCoverImage();
+        if ( $coverImage ) {
+            $ig = new LSE_Util_CoverImageGenerator();
+            $srcPath = $coverImage;
+            $dstPath = tempnam('/tmp', 'LSE_CoverImage_');
+            $text    = $this->_engine->getBook()->getTitle();
+            $ig->setSrcImagePath($srcPath);
+            $ig->setDstImagePath($dstPath);
+            $ig->setText($text);
+            $ig->generate();
+            $this->_plugin->setCoverImage('coverImage', file_get_contents($dstPath), 'image/png');
+            unlink($dstPath);
+        }
     }
     
     protected function _setupTOC()

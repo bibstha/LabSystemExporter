@@ -119,8 +119,13 @@ class LSE_Plugin extends EPub
         if ( ! count($graph) )
             return '';
         
-        $outputTemplate = "<navPoint id='%s' playOrder='%d'>\n" . "<navLabel><text>%s</text></navLabel>\n" . "<content src='%s#%s'/>\n" . "%s\n" . "</navPoint>\n";
         $output = '';
+        $outputTemplate = "<navPoint id='%s' playOrder='%d'>\n" . "<navLabel><text>%s</text></navLabel>\n" . "<content src='%s'/>\n" . "%s\n" . "</navPoint>\n";
+        
+        if ( $startId == 1 && isset($this->fileList["CoverPage.html"])) {
+            $output = sprintf($outputTemplate, "", 0, 'CoverPage', "CoverPage.html", '', '');
+        }
+        
         $origFilename = $fileName;
         foreach ( $graph as $id => $element ) {
             $elementStartId = $startId;
@@ -135,7 +140,7 @@ class LSE_Plugin extends EPub
             // @todo same problem here, string "PasteBin & Feedback" was received at some point
             $output .= sprintf($outputTemplate, $elementId, $elementStartId, 
                 LSE_Util::filterPTag(htmlspecialchars($elementLabel, ENT_COMPAT, 'UTF-8', false))
-                , $fileName, $elementId, $childOutput);
+                , $fileName . '#' . $elementId, $childOutput);
         }
         
         return $output;
@@ -150,7 +155,5 @@ class LSE_Plugin extends EPub
     public function setNcxFromGraph($graph, $elementTable)
     {
         $this->ncx_navmap = $this->buildExtraNavString($graph, $elementTable);
-//         = $navigation;
-//        $this->ncx_navmap .= "\n\t\t<navPoint id=\"chapter" . $this->chapterCount . "\" playOrder=\"" . $this->chapterCount . "\">\n\t\t\t<navLabel><text>" . $chapterName . "</text></navLabel>\n\t\t\t<content src=\"" . $fileName . "\" />\n\t\t</navPoint>\n";
     }
 }
