@@ -29,7 +29,13 @@ class LSE_Util_CoverImageGenerator
         $this->_text = $_text;
     }
 
-	public function generate()
+    /**
+     * Creates a new temporary image from given source image and text.
+     * 
+     * The default size of the image is 600(w)x800(h) which can be changed.
+     * The font is arial.ttf embedded inside this folder.
+     */
+    public function generate()
     {
         $imgWidth  = 600;
         $imgHeight = 800;
