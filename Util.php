@@ -33,8 +33,8 @@ class LSE_Util
     /**
      * Checks whether given parentTypes are the immediate parent of element identified by fullId
      * 
-     * @param unknown_type $fullId
-     * @param unknown_type $parentType
+     * @param string $fullId
+     * @param array|string $parentType
      */
     public static function checkParentType($fullId, $parentType)
     {
@@ -49,23 +49,38 @@ class LSE_Util
         return (in_array($actualParentType, $parentType));
     }
     
-    public static function filterPTag($string)
+    /**
+     * Formats incorrect HTML in string and returns a well formatted valid HTML
+     *
+     * @param $string that needs to be verified
+     * @param $id     for debugging purpose, if there is an error, id is printed with debug
+     */
+    public static function filterPTag($string, $id = null)
     {
         // @todo LowC sometimes has & instead of escaped &amp; for example in PasteBin & Feedback
         $string = utf8_encode($string);
         // Debug when HTML errors occur...
         // echo( '<br><hr>'.htmlentities( $string ).'<hr><br>' );
-        $string = preg_replace_callback('/(href[\s]*=[\s]*["\'])(\.\.\/.*)["\']/U', 
+        $string = preg_replace_callback('/(href[\s]*=[\s]*["\'])(\.\.\/.*)(["\'])/U', 
         array('LSE_Util', 'relativeToAbsoluteURI'), $string); 
         
         $domDoc = new DOMDocument();
         $domDoc->recover = true;
         $domDoc->strictErrorChecking = false;
         
+        libxml_use_internal_errors(true);
+        
         // we need to wrap it inside div because by default if we just put normal text, it is wrapped inside 
         // a p tag eg, if string is "a <p>b</p> c" then result string would be "<p>a </p><p>b</p> c" Note last c is
         // not enclosed in p. Strange
+
         $domDoc->loadHTML("<div>$string</div>");
+        $errors = libxml_get_errors();
+        if (count($errors)) {
+            self::handleLoadHtmlError($errors, $string, $id);
+            exit(0);
+        }
+        libxml_use_internal_errors(false);
         return self::get_inner_html($domDoc->documentElement->firstChild->firstChild);
 //        print $result . "///////////////////////\n";
 //        if (strpos($string, "Paste") === 0)
@@ -104,7 +119,7 @@ class LSE_Util
         $relativeUrl = $matches[2];
         require_once('LSE/includes/url_to_absolute.php');
         $absoluteUrl =  htmlspecialchars(url_to_absolute( $baseUrl, $relativeUrl ), ENT_COMPAT, 'ISO-8859-1', FALSE);
-        return $matches[1] . $absoluteUrl . '"';
+        return $matches[1] . $absoluteUrl . $matches[3];
     }
     
     public static function fileExists($filename, $useIncludePath = null)
@@ -125,13 +140,34 @@ class LSE_Util
     
     public static function string_decode($string)
     {
-        return $string;
-//        return html_entity_decode($string, ENT_COMPAT, 'UTF-8');
+        // return $string;
+        return html_entity_decode($string, ENT_COMPAT, 'UTF-8');
     }
     
     public static function string_encode($string)
     {
         return $string;
 //        return htmlentities($string, ENT_COMPAT, 'UTF-8');
+    }
+    
+    public static function handleLoadHtmlError($errors, $doc, $id = null) {
+        $output = '';
+        if ($id) $output .= 'You have error in ' . $id . (isset($_GET['config']) ? " [<a href='../pages/edit.php?config=".$_GET['config']."&inside=true&address=".$id."'>edit</a>]" : '' )."\n";
+        foreach ($errors as $error) {
+            $output .= 'Error: Line ' . ($error->line-1) . ' : ' . $error->message . "\n";
+        }
+        $tpl = <<<EOF
+<html>
+  <head>
+    <script src='http://cdnjs.cloudflare.com/ajax/libs/prettify/188.0.0/prettify.js' type='text/javascript'></script>
+    <link rel="stylesheet" href='http://cdn.bitbucket.org/shekharpro/google_code_prettify/downloads/prettify.css' />
+  </head>
+  <body onload='prettyPrint()'>
+    <pre>%s</pre>
+    <pre class='prettyprint linenums'>%s</pre>
+  </body>
+</html>
+EOF;
+        printf($tpl, $output, htmlspecialchars($doc));
     }
 }

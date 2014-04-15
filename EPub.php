@@ -4,6 +4,7 @@ require_once('LSE/Decorator.php');
 require_once('LSE/Book.php');
 require_once('LSE/Element.php');
 require_once('LSE/Engine.php');
+require_once('LSE/Logger.php');
 
 /**
  * EPub Engine for exporting
@@ -21,8 +22,9 @@ require_once('LSE/Engine.php');
  * @author Bibek Shrestha <bibekshrestha@gmail.com>
  * @todo PHPePub implementation can be improved.
  */
-class LSE_Epub implements LSE_Engine
+class LSE_EPub implements LSE_Engine
 {
+    protected $_log;
     protected $decorator;
     protected $book;
     
@@ -30,6 +32,41 @@ class LSE_Epub implements LSE_Engine
     {
         $this->decorator = new LSE_Decorator();
         $this->book = new LSE_Book();
+        $this->book->setDecorator($this->decorator);
+        
+        $this->_log = new LSE_Logger('LSE_Epub');
+    }
+    
+    public function getBook()
+    {
+        return $this->book;
+    }
+    
+    public function setBook($book)
+    {
+        $this->book = $book;
+    }
+    
+    public function getDecorator()
+    {
+        return $this->decorator;
+    }
+    
+    /**
+     * Options are saved from calling classes.
+     * The options usually have EPub specific fields like
+     * - Title
+     * - Author
+     * - Lang
+     * - Comment
+     * - StyleSheetPath
+     * 
+     * <b>Note:</b> This completely overwrites the existing configuration of the Book Object
+     * @param array $options
+     */
+    public function setOptions(array $options)
+    {
+        return $this->book->setOptions($options);
     }
     
     /**
@@ -37,59 +74,30 @@ class LSE_Epub implements LSE_Engine
      */
     public function save($type, $id, $content, array $options = array())
     {
-        if ('l' == $type) {
-            $element = new LSE_Book();
-            $element->setDecorator($this->decorator);
-            
-            $element->setTitle( $options['title'] );
-            $element->setAuthors( $options['authors'] );
-            $element->setLang( $options['lang'] );
-            $element->setComment( $options['comment'] );
-            $element->setId( $id );
-            if ( isset($options['userStyleSheetPath']) )
-                $element->setUserStyleSheetPath( $options['userStyleSheetPath'] );
-            
-            $this->book = $element;
-        }
-        else {
-            $element = new LSE_Element();
-            $element->setDecorator($this->decorator);
-            
-            $element->setType( $type );
-            $element->setId( $id );
-            $element->setContent( $content );
-            $element->setOptions( $options );
-            
-            $this->book->addElement( $element );
-        }
+        $element = new LSE_Element();
+        $element->setDecorator($this->decorator);
+        
+        $element->setType( $type );
+        $element->setId( $id );
+        $element->setContent( $content );
+        $element->setOptions( $options );
+        
+        $this->book->addElement( $element );
     }
     
     public function render()
     {
-        $output = $this->book->render();
-        $graph = $this->book->buildGraph(array("l", "C"));
-        $elementTable = $this->book->getElementTable(array("l", "C"));
-        
-//        print_r($elementTable); exit(0);
-        $firstElement = each($graph);
-        $graph[ $firstElement['key'] ] = array_merge( array('toc' => array()), $firstElement['value']);
-        $elementTable['toc'] = array('toc', 'Table of Contents');
-        $epub = $this->getEpub();
-        if (LSE_DEBUG) {
-            print $output;
+        $epubPlugin = $this->getEpub();
+        if ($this->book->getOption('isMultiChapterEnabled')) {
+            require_once('LSE/Renderer/MultiChapter.php');
+            $renderer = new LSE_Renderer_MultiChapter($this);
+            
         }
         else {
-            $epub->addChapter($this->book->getTitle(), 'Chapter1', $output, false, EPub::EXTERNAL_REF_ADD, 
-                '',
-                array('graph' => $graph, 'elementTable' => $elementTable)
-            );
-            $epub->finalize();
-            $bookTitle = str_replace(' ', '_', strtolower($this->book->getTitle()));
-            // bookTitle is usually htmlencoded, so decode this first
-            $bookTitle = LSE_Util::filterPTag($bookTitle);
-            $epub->sendBook($bookTitle);
+            require_once('LSE/Renderer/SingleChapter.php');
+            $renderer = new LSE_Renderer_SingleChapter($this);
         }
-        return NULL;
+        return $renderer->render();
     }
     
     public function getEpub()
@@ -98,19 +106,30 @@ class LSE_Epub implements LSE_Engine
         $book = new LSE_Plugin();
         
         $title = LSE_Util::filterPTag($this->book->getTitle());
-//        $title = $this->book->getTitle();
+        $title = LSE_Util::string_decode($this->book->getTitle());
         $author = LSE_Util::filterPTag($this->book->getAuthors());
-//        $author = $this->book->getAuthors();
+        $author = $this->book->getAuthors();
+
+        $identifier   = utf8_encode( $this->book->getOption('identifier') );
+        $language     = utf8_encode( $this->book->getOption('lang') );
+        $description  = utf8_encode( $this->book->getOption('description') );
+        $publisher    = utf8_encode( $this->book->getOption('publisher') );
+        $publisherUrl = utf8_encode( $this->book->getOption('publisherUrl') );
+        if (empty($publisherUrl)) $publisherUrl = 'http://labsystem.sf.net';
+        $date         = utf8_encode( $this->book->getOption('date') );
+        $rights       = utf8_encode( $this->book->getOption('rights') );
+        $sourceUrl    = utf8_encode( $this->book->getOption('sourceUrl') );
+        if (empty($sourceUrl)) $sourceUrl = 'http://labsystem.sf.net';
         
         $book->setTitle($title);
-        $book->setIdentifier("http://ilab.net.in.tum.de/", EPub::IDENTIFIER_URI); // Could also be the ISBN number, prefered for published books, or a UUID.
-        $book->setLanguage("en"); // Not needed, but included for the example, Language is mandatory, but EPub defaults to "en". Use RFC3066 Language codes, such as "en", "da", "fr" etc.
-        $book->setDescription("This is a brief description\nA test ePub book as an example of building a book in PHP");
+        $book->setIdentifier($identifier, EPub::IDENTIFIER_URI); // Could also be the ISBN number, prefered for published books, or a UUID.
+        $book->setLanguage($language); // Not needed, but included for the example, Language is mandatory, but EPub defaults to "en". Use RFC3066 Language codes, such as "en", "da", "fr" etc.
+        $book->setDescription($description);
         $book->setAuthor($author, $author); 
-        $book->setPublisher("Technische Universität München", "http://ilab.net.in.tum.de/"); // I hope this is a non existant address :) 
-        $book->setDate(time()); // Strictly not needed as the book date defaults to time().
-        $book->setRights("Copyright and licence information specific for the book."); // As this is generated, this _could_ contain the name or licence information of the user who purchased the book, if needed. If this is used that way, the identifier must also be made unique for the book.
-        $book->setSourceURL("http://ilab.net.in.tum.de-");
+        $book->setPublisher($publisher, $publisherUrl); // I hope this is a non existant address :) 
+        $book->setDate($date); // Strictly not needed as the book date defaults to time().
+        $book->setRights($rights); // As this is generated, this _could_ contain the name or licence information of the user who purchased the book, if needed. If this is used that way, the identifier must also be made unique for the book.
+        $book->setSourceURL($sourceUrl);
         
         $book->setDocRoot(LSE_PATH_LABSYSTEM);
         return $book;

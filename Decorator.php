@@ -1,7 +1,7 @@
 <?php
 
-require_once('LSE/Util.php');
-require_once('LSE/includes/SPT/View.php');
+require_once('Util.php');
+require_once('includes/SPT/View.php');
 
 class LSE_Decorator
 {
@@ -12,51 +12,52 @@ class LSE_Decorator
      * @param output $content
      * @param LSE_Element $element
      */
-    public function decorate($type, $content, $element)
+    public function decorate($type, $childContent, $element)
     {
         switch ($type) {
-            case 'book':
-                return $this->decorateBook($content, $element);
+            case 'Ll':
+                return $this->decorateLowl($childContent, $element);
                 
             case 'BC':
-                return $this->decorateBigC($content, $element);
+                return $this->decorateBigC($childContent, $element);
                 
             case 'Lc':
-                return $this->decorateLowC($content, $element);
+                return $this->decorateLowC($childContent, $element);
             
             case 'Lp':
-                return $this->decorateLowP($content, $element);
+                return $this->decorateLowP($childContent, $element);
                 
             case 'Lm':
-                return $this->decorateLowM($content, $element);
+                return $this->decorateLowM($childContent, $element);
                 
             case 'Li':
-                return $this->decorateLowI($content, $element);
+                return $this->decorateLowI($childContent, $element);
                 
             default:
-                return $this->decorateDefault($content, $element);
+                throw new Exception('Decoratory type ' . $type . ' not found');
+                return $this->decorateDefault($childContent, $element);
         }
     }
     
     public function decorateDefault($content, $element)
     {
-        return $content;
+        // return $content;
     }
     
-    public function decorateBook($content, $element)
+    public function decorateLowl($childContent, $element)
     {
         $oView = new SPT_View();
         $vars = array(
-            'title'   => $element->getTitle(),
-            'content' => $content,
-            'id'      => $element->getId(),
-            'author'  => $element->getAuthors(),
-            'comment' => $element->getComment(),
-            'toc'     => $element->getOption('toc'),
-            'userStyleSheetPath' => $element->getUserStyleSheetPath(),
+            'title'        => $element->getOption('title'),
+            'childContent' => $childContent,
+            'id'           => $element->getId(),
+            'author'       => $element->getOption('authors'),
+            'comment'      => $element->getOption('comment'),
+            'toc'          => $element->getOption('toc'),
+//            'userStyleSheetPath' => $element->getUserStyleSheetPath(),
         );
         $oView->assign($vars);
-        return $oView->render(LSE_ROOT . "/templates/decorators/book.phtml", true);
+        return $oView->render(LSE_ROOT . "/templates/decorators/Ll.phtml", true);
     }
     
     public function decorateBigC($childContent, $element)
